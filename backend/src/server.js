@@ -36,6 +36,7 @@ app.use('/api/bookings', bookingRoutes);
 const reviewRoutes = require('./reviews');
 app.use('/api/reviews', reviewRoutes);
 
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
