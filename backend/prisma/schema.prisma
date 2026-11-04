@@ -1,0 +1,225 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model User {
+  user_id        Int      @id @default(autoincrement())
+  full_name      String   @db.VarChar(100)
+  email          String   @unique @db.VarChar(150)
+  password_hash  String   @db.VarChar(255)
+  phone          String?  @db.VarChar(20)
+  role           Role     @default(CUSTOMER)
+  profile_image  String?  @db.VarChar(255)
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  barbershop     Barbershop?
+  barber_profile Barber?
+  appointments   Appointment[]  @relation("CustomerAppointments")
+  payments       Payment[]      @relation("PayerPayments")
+  reviews        Review[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  SHOP_OWNER
+  BARBER
+  CUSTOMER
+}
+
+model Barbershop {
+  shop_id         Int        @id @default(autoincrement())
+  owner_id        Int        @unique
+  shop_name       String     @db.VarChar(120)
+  address         String
+  city            String     @db.VarChar(100)
+  latitude        Decimal?   @db.Decimal(10, 8)
+  longitude       Decimal?   @db.Decimal(11, 8)
+  description     String?
+  contact_number  String?    @db.VarChar(20)
+  operating_hours String?    @db.VarChar(120)
+  logo_url        String?    @db.VarChar(255)
+  status          ShopStatus @default(PENDING)
+  is_featured     Boolean    @default(false)
+  created_at      DateTime   @default(now())
+  updated_at      DateTime   @updatedAt
+
+  owner          User           @relation(fields: [owner_id], references: [user_id])
+  subscriptions  Subscription[]
+  services       Service[]
+  gallery        HaircutGallery[]
+  barbers        Barber[]
+  appointments   Appointment[]
+  reviews        Review[]
+
+  @@map("barbershops")
+}
+
+enum ShopStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+  REJECTED
+}
+
+model Subscription {
+  subscription_id Int       @id @default(autoincrement())
+  shop_id         Int
+  plan            Plan      @default(BASIC)
+  start_date      DateTime
+  end_date        DateTime
+  amount          Decimal   @db.Decimal(10, 2)
+  payment_method  String?   @db.VarChar(50)
+  status          SubStatus @default(PENDING)
+  created_at      DateTime  @default(now())
+
+  shop            Barbershop @relation(fields: [shop_id], references: [shop_id])
+  payment         Payment?
+
+  @@index([end_date, status])
+  @@map("subscriptions")
+}
+
+enum Plan {
+  BASIC
+  PREMIUM
+}
+
+enum SubStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model Service {
+  service_id       Int     @id @default(autoincrement())
+  shop_id          Int
+  service_name     String  @db.VarChar(100)
+  description      String?
+  price            Decimal @db.Decimal(8, 2)
+  duration_minutes Int
+  category         String? @db.VarChar(50)
+  is_active        Boolean @default(true)
+
+  shop             Barbershop    @relation(fields: [shop_id], references: [shop_id], onDelete: Cascade)
+  appointments     Appointment[]
+
+  @@map("services")
+}
+
+model HaircutGallery {
+  gallery_id  Int      @id @default(autoincrement())
+  shop_id     Int
+  image_url   String   @db.VarChar(255)
+  style_name  String   @db.VarChar(100)
+  description String?
+  uploaded_at DateTime @default(now())
+
+  shop        Barbershop @relation(fields: [shop_id], references: [shop_id], onDelete: Cascade)
+
+  @@map("haircut_gallery")
+}
+
+model Barber {
+  barber_id    Int     @id @default(autoincrement())
+  shop_id      Int
+  user_id      Int?    @unique
+  barber_name  String  @db.VarChar(100)
+  specialty    String? @db.VarChar(100)
+  availability Json?
+  is_active    Boolean @default(true)
+
+  shop         Barbershop    @relation(fields: [shop_id], references: [shop_id], onDelete: Cascade)
+  user         User?         @relation(fields: [user_id], references: [user_id])
+  appointments Appointment[]
+  reviews      Review[]
+
+  @@map("barbers")
+}
+
+model Appointment {
+  appointment_id   Int        @id @default(autoincrement())
+  customer_id      Int
+  shop_id          Int
+  service_id       Int
+  barber_id        Int?
+  appointment_date DateTime   @db.Date
+  appointment_time String     @db.VarChar(10)
+  status           ApptStatus @default(PENDING)
+  total_amount     Decimal    @db.Decimal(10, 2)
+  notes            String?
+  qr_code          String?    @unique @db.VarChar(255)
+  created_at       DateTime   @default(now())
+
+  customer         User       @relation("CustomerAppointments", fields: [customer_id], references: [user_id])
+  shop             Barbershop @relation(fields: [shop_id], references: [shop_id])
+  service          Service    @relation(fields: [service_id], references: [service_id])
+  barber           Barber?    @relation(fields: [barber_id], references: [barber_id])
+  payment          Payment?
+  review           Review?
+
+  @@unique([barber_id, appointment_date, appointment_time], name: "uq_barber_slot")
+  @@index([shop_id, appointment_date])
+  @@map("appointments")
+}
+
+enum ApptStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Payment {
+  payment_id       Int       @id @default(autoincrement())
+  appointment_id   Int?      @unique
+  subscription_id  Int?      @unique
+  payer_id         Int
+  amount           Decimal   @db.Decimal(10, 2)
+  payment_method   String?   @db.VarChar(50)
+  reference_number String?   @db.VarChar(100)
+  status           PayStatus @default(PENDING)
+  paid_at          DateTime?
+
+  appointment      Appointment?  @relation(fields: [appointment_id], references: [appointment_id])
+  subscription     Subscription? @relation(fields: [subscription_id], references: [subscription_id])
+  payer            User          @relation("PayerPayments", fields: [payer_id], references: [user_id])
+
+  @@map("payments")
+}
+
+enum PayStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Review {
+  review_id      Int      @id @default(autoincrement())
+  appointment_id Int      @unique
+  customer_id    Int
+  shop_id        Int
+  barber_id      Int?
+  rating         Int
+  comment        String?
+  created_at     DateTime @default(now())
+
+  appointment    Appointment @relation(fields: [appointment_id], references: [appointment_id])
+  customer       User        @relation(fields: [customer_id], references: [user_id])
+  shop           Barbershop  @relation(fields: [shop_id], references: [shop_id])
+  barber         Barber?     @relation(fields: [barber_id], references: [barber_id])
+
+  @@map("reviews")
+}
