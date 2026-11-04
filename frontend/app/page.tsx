@@ -28,7 +28,8 @@ export default function Home() {
         console.error("Failed to fetch shops", err);
         setIsLoading(false);
       });
-          // Fetch Strapi Announcement
+
+    // Fetch Strapi Announcement
     axios.get('http://localhost:1337/api/announcements')
       .then(res => {
         if (res.data.data && res.data.data.length > 0) {
@@ -56,7 +57,7 @@ export default function Home() {
             </div>
             <div className="hidden md:flex space-x-8">
               <a href="#barbershops" className="text-gray-600 hover:text-blue-600 font-medium">Barbershops</a>
-              <Link href="" className="text-gray-600 hover:text-blue-600 font-medium">Services</Link>
+              <Link href="/services" className="text-gray-600 hover:text-blue-600 font-medium">Services</Link>
               <Link href="/about" className="text-gray-600 hover:text-blue-600 font-medium">About</Link>
             </div>
             
@@ -85,13 +86,13 @@ export default function Home() {
 
       {/* Hero Section */}
       <main>
-        {/* STRAPI ANNOUNCEMENT BANNER */}
         {announcement && (
           <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 max-w-7xl mx-auto mt-4 rounded shadow-sm">
             <p className="font-bold text-lg">{announcement.title}</p>
             <p>{announcement.message}</p>
           </div>
         )}
+
         <div className="relative bg-white overflow-hidden">
           <div className="max-w-7xl mx-auto">
             <div className="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32 pt-20 px-4 sm:px-6 lg:px-8">
@@ -126,15 +127,13 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {shops.map((shop) => (
                 <div key={shop.shop_id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition flex flex-col">
-                  
-                  {/* Show first gallery image as cover, or a gray box */}
                   {shop.gallery && shop.gallery.length > 0 ? (
                     <img src={shop.gallery[0].image_url} alt={shop.shop_name} className="h-48 w-full object-cover" />
                   ) : (
                     <div className="h-48 bg-gray-200 w-full flex items-center justify-center text-gray-400">No Image</div>
                   )}
                   
-                  <div className="p-4 flex flex-col grow">
+                  <div className="p-4 flex flex-col flex-grow">
                     <h3 className="font-bold text-lg text-gray-900">{shop.shop_name}</h3>
                     <p className="text-sm text-gray-500 mb-2">{shop.city}</p>
                     <div className="flex items-center gap-1 mb-4 mt-auto">
@@ -143,8 +142,8 @@ export default function Home() {
                       <span className="text-sm text-gray-400">(Mock Reviews)</span>
                     </div>
                     <Link href={`/shop/${shop.shop_id}`} className="w-full text-center block bg-blue-50 text-blue-600 font-medium py-2 rounded-lg hover:bg-blue-100 transition">
-                    Book Now
-                  </Link>
+                      Book Now
+                    </Link>
                   </div>
                 </div>
               ))}
