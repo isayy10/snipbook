@@ -133,7 +133,7 @@ export default function Home() {
                     <div className="h-48 bg-gray-200 w-full flex items-center justify-center text-gray-400">No Image</div>
                   )}
                   
-                  <div className="p-4 flex flex-col flex-grow">
+                  <div className="p-4 flex flex-col grow">
                     <h3 className="font-bold text-lg text-gray-900">{shop.shop_name}</h3>
                     <p className="text-sm text-gray-500 mb-2">{shop.city}</p>
                     <div className="flex items-center gap-1 mb-4 mt-auto">
