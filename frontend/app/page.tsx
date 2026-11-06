@@ -18,7 +18,6 @@ export default function Home() {
       setUser(JSON.parse(storedUser));
     }
 
-    // Kunin ang active shops mula sa backend
     axios.get('http://localhost:5000/api/shops')
       .then(res => {
         setShops(res.data);
@@ -29,7 +28,6 @@ export default function Home() {
         setIsLoading(false);
       });
 
-    // Fetch Strapi Announcement
     axios.get('http://localhost:1337/api/announcements')
       .then(res => {
         if (res.data.data && res.data.data.length > 0) {
@@ -48,7 +46,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-      {/* Navigation */}
       <nav className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
@@ -65,7 +62,11 @@ export default function Home() {
               {user ? (
                 <>
                   <span className="text-gray-700 font-medium">Hi, {user.full_name.split(' ')[0]}!</span>
-                  <Link href="/my-bookings" className="text-blue-600 font-medium hover:text-blue-800 mr-4">My Bookings</Link>
+                  {user.role === 'CUSTOMER' && (
+                 <Link href="/my-bookings" className="text-blue-600 font-medium hover:text-blue-800 mr-4">
+                  My Bookings
+                 </Link>
+                  )}
                   {user.role === 'SHOP_OWNER' && (
                     <Link href="/dashboard" className="text-blue-600 font-medium hover:text-blue-800">Dashboard</Link>
                   )}
@@ -84,7 +85,6 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Section */}
       <main>
         {announcement && (
           <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 max-w-7xl mx-auto mt-4 rounded shadow-sm">
@@ -115,7 +115,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Real Barbershops Directory */}
         <div id="barbershops" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Active Barbershops</h2>
           

@@ -79,7 +79,7 @@ router.get('/customer/:customer_id', async (req, res) => {
     const appointments = await prisma.appointment.findMany({
       where: { customer_id: parseInt(req.params.customer_id) },
       include: {
-        shop: { select: { shop_name: true, address: true } },
+        shop: { select: { shop_name: true, address: true, owner_id: true } },
         service: true
         
       },

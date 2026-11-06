@@ -70,10 +70,17 @@ export default function MyBookingsPage() {
             </Link>
           </div>
 
-          {/* Kanang bahagi: User Info */}
-          <span className="text-gray-600 font-medium">Hi, {user?.full_name || 'Customer'}</span>
-          
-        </div>
+                      {/* Kanang bahagi: User Info at Logout */}
+            <div className="flex items-center gap-4">
+              <span className="text-gray-600 font-medium">Hi, {user?.full_name || 'Customer'}</span>
+              <button 
+                onClick={() => { localStorage.clear(); window.location.href='/login'; }} 
+                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-full font-medium hover:bg-gray-300 transition"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
       </nav>  
 
       <main className="max-w-4xl mx-auto px-4 py-10">
@@ -104,10 +111,14 @@ export default function MyBookingsPage() {
                     {booking.status}
                   </span>
                   <p className="text-lg font-bold text-gray-900">₱{booking.total_amount}</p>
-                  <div className="mt-4 bg-white p-2 border rounded-lg inline-block">
-                    <QRCode value={booking.qr_code || 'no-code'} size={80} />
-                  </div>
-                    {booking.status === 'COMPLETED' && !booking.review && (
+                  {/* QR Code (Para sa Customer lang) */}
+                  {user.user_id !== booking.shop.owner_id && (
+                    <div className="mt-4 bg-white p-2 border rounded-lg inline-block">
+                      <QRCode value={booking.qr_code || 'no-code'} size={80} />
+                    </div>
+                  )}
+
+                  {booking.status === 'COMPLETED' && !booking.review && user.user_id !== booking.shop.owner_id && (
                     <button 
                       onClick={() => { setSelectedBooking(booking); setReviewModal(true); }}
                       className="mt-4 w-full bg-yellow-500 text-white px-4 py-2 rounded font-medium hover:bg-yellow-600 transition"
